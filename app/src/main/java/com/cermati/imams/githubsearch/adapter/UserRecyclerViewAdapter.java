@@ -1,4 +1,4 @@
-package com.cermati.imams.githubsearch;
+package com.cermati.imams.githubsearch.adapter;
 
 import android.content.Context;
 import android.content.Intent;
@@ -10,6 +10,9 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.cermati.imams.githubsearch.R;
+import com.cermati.imams.githubsearch.model.User;
+import com.cermati.imams.githubsearch.activity.UserDetailsActivity;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -21,12 +24,10 @@ public class UserRecyclerViewAdapter extends RecyclerView.Adapter<UserRecyclerVi
 
     private Context context;
     private ArrayList<User> userArrayList;
-    private ItemClickListener mClickListener;
 
-    public UserRecyclerViewAdapter(Context context, ArrayList<User> userArrayList, ItemClickListener mClickListener) {
+    public UserRecyclerViewAdapter(Context context, ArrayList<User> userArrayList) {
         this.context = context;
         this.userArrayList = userArrayList;
-        this.mClickListener = mClickListener;
     }
 
     @Override
@@ -60,11 +61,7 @@ public class UserRecyclerViewAdapter extends RecyclerView.Adapter<UserRecyclerVi
         }
     }
 
-    public interface ItemClickListener {
-        void onItemClickListener(int position, ImageView avatar);
-    }
-
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class ViewHolder extends RecyclerView.ViewHolder {
 
         @BindView(R.id.layout)
         RelativeLayout layout;
@@ -76,14 +73,7 @@ public class UserRecyclerViewAdapter extends RecyclerView.Adapter<UserRecyclerVi
         public ViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
-            itemView.setOnClickListener(this);
         }
 
-        @Override
-        public void onClick(View view) {
-            if (mClickListener != null) {
-                mClickListener.onItemClickListener(getAdapterPosition(), ivAvatar);
-            }
-        }
     }
 }

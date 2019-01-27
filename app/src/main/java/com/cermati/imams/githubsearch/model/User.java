@@ -1,4 +1,4 @@
-package com.cermati.imams.githubsearch;
+package com.cermati.imams.githubsearch.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;

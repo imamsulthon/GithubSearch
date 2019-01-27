@@ -1,4 +1,4 @@
-package com.cermati.imams.githubsearch;
+package com.cermati.imams.githubsearch.service;
 
 import android.content.Context;
 import android.net.ConnectivityManager;

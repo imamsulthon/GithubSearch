@@ -1,4 +1,6 @@
-package com.cermati.imams.githubsearch;
+package com.cermati.imams.githubsearch.service;
+
+import com.cermati.imams.githubsearch.model.SearchResponse;
 
 import retrofit2.Call;
 import retrofit2.http.GET;

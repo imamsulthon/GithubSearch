@@ -1,10 +1,12 @@
-package com.cermati.imams.githubsearch;
+package com.cermati.imams.githubsearch.activity;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.cermati.imams.githubsearch.R;
+import com.cermati.imams.githubsearch.model.User;
 import com.squareup.picasso.Picasso;
 
 import butterknife.BindView;

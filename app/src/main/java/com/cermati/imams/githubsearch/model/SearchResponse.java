@@ -1,4 +1,4 @@
-package com.cermati.imams.githubsearch;
+package com.cermati.imams.githubsearch.model;
 
 import com.google.gson.annotations.SerializedName;
 

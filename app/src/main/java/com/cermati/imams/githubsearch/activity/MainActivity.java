@@ -12,6 +12,7 @@ import android.transition.Slide;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.arlib.floatingsearchview.FloatingSearchView;
@@ -34,33 +35,38 @@ import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
 
-    @BindView(R.id.recyclerview)
-    RecyclerView recyclerView;
-    @BindView(R.id.loading_indicator)
-    ProgressBar progressBar;
+    @BindView(R.id.layout_main)
+    RelativeLayout mainLayout;
+    @BindView(R.id.layout_empty_results)
+    RelativeLayout emptyResults;
     @BindView(R.id.search_view)
     FloatingSearchView searchView;
+    @BindView(R.id.loading_indicator)
+    ProgressBar progressBar;
+    @BindView(R.id.recyclerview)
+    RecyclerView recyclerView;
 
     private ArrayList<User> userArrayList = new ArrayList<>();
     private Context context;
     private UserRecyclerViewAdapter adapter;
-
-    private LinearLayoutManager layoutManager;
-    int pageIndex, totalPages;
-    String query;
+    
+    private int pageIndex, totalPages;
+    private String query;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Slide slide = new Slide(Gravity.LEFT);
             getWindow().setExitTransition(slide);
         }
+
         context = getApplicationContext();
 
-        layoutManager = new LinearLayoutManager(context);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(context);
         recyclerView.setLayoutManager(layoutManager);;
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(),
                 layoutManager.getOrientation());
@@ -85,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.addOnScrollListener(new EndlessRecyclerViewOnScrollListener() {
             @Override
             public void onLoadMore() {
-                loadMore(query);
+                getMoreResults(query);
             }
         });
     }
@@ -93,29 +99,40 @@ public class MainActivity extends AppCompatActivity {
     private void getResult(String query) {
         recyclerView.setVisibility(View.INVISIBLE);
         progressBar.setVisibility(View.VISIBLE);
+        mainLayout.setVisibility(View.GONE);
+        emptyResults.setVisibility(View.GONE);
         RetrofitApi retrofitApi = NetworkUtility.getCacheEnabledRetrofit(getApplicationContext()).create(RetrofitApi.class);
         Call<SearchResponse> call = retrofitApi.getResults(query, 1);
         call.enqueue(new Callback<SearchResponse>() {
             @Override
             public void onResponse(Call<SearchResponse> call, Response<SearchResponse> response) {
+                progressBar.setVisibility(View.GONE);
                 SearchResponse searchResponse = response.body();
                 userArrayList.clear();
                 if (searchResponse != null) {
-                    userArrayList.addAll(searchResponse.getUserArrayList());
-                    adapter.notifyDataSetChanged();
+                    if (searchResponse.getTotalCount() != 0) {
+                        userArrayList.addAll(searchResponse.getUserArrayList());
+                        adapter.notifyDataSetChanged();
 
-                    // getting total results and number of pages posibility
-                    int totalResults = searchResponse.getTotalCount();
-                    int pages = totalResults/30;
-                    totalPages = pages;
-                    if ((totalResults % 30) > 0) {
-                        totalPages = totalPages + 1;
+                        // getting total results and number of pages posibility
+                        int totalResults = searchResponse.getTotalCount();
+                        int pages = totalResults/30;
+                        totalPages = pages;
+                        if ((totalResults % 30) > 0) {
+                            totalPages = totalPages + 1;
+                        }
+                        Toast.makeText(context, "Total results: " + totalResults +
+                                ", Total pages = " + totalPages, Toast.LENGTH_LONG).show();
+
+                        // show results
+                        recyclerView.setVisibility(View.VISIBLE);
+                    } else {
+                        emptyResults.setVisibility(View.VISIBLE);
                     }
-                    Toast.makeText(context, "Total results: " + totalResults +
-                            ", Total pages = " + totalPages, Toast.LENGTH_LONG).show();
+                } else {
+                    emptyResults.setVisibility(View.VISIBLE);
+                    progressBar.setVisibility(View.GONE);
                 }
-                recyclerView.setVisibility(View.VISIBLE);
-                progressBar.setVisibility(View.GONE);
             }
 
             @Override
@@ -127,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void loadMore(String query) {
+    private void getMoreResults(String query) {
         if (pageIndex <= totalPages) {
             progressBar.setVisibility(View.VISIBLE);
             Toast.makeText(this, "Pages: " + pageIndex, Toast.LENGTH_SHORT).show();
@@ -149,8 +166,7 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void onFailure(Call<SearchResponse> call, Throwable t) {
                             Toast.makeText(context, "Error!", Toast.LENGTH_LONG).show();
-                            recyclerView.setVisibility(View.INVISIBLE);
-                            recyclerView.setVisibility(View.GONE);
+                            progressBar.setVisibility(View.GONE);
                         }
                     });
                 }
@@ -162,6 +178,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         if (searchView.isSearchBarFocused()) {
+            emptyResults.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.GONE);
             searchView.clearQuery();
             pageIndex = 2;
         } else {
